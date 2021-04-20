@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <Data xmlns="http://localhost:3000/">
-        <Name>One Piece</Name>
-        <Rating>9.5</Rating>
-    </Data>
-  </soap:Body>
-</soap:Envelope>
