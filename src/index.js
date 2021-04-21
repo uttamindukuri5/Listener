@@ -1,12 +1,11 @@
 const fs = require('fs');
 const http = require('http');
-const queryString = require('querystring');
 
 const IP_FILE_NAME = 'ip-mapping.json';
 let fileName;
 let isXml = false;
 
-const server = http.createServer(async (req, res) => {
+const server = http.createServer((req, res) => {
     isXml = req.headers['content-type'] === 'application/xml' ? true : false;
     if (req.method === 'POST') {
         let rawData = '';
@@ -15,7 +14,7 @@ const server = http.createServer(async (req, res) => {
             rawData += chunk;
         });
 
-        req.on('end', async () => {
+        req.on('end', () => {
             const data = rawData;
             fs.writeFile(`${__dirname}/data/${fileName}-${new Date()}.${isXml ? 'xml' : 'json'}`, data, err => {
                 if (err) {
@@ -30,19 +29,18 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.on('connection', sock => {
-    const rawIp = fs.readFileSync(`${__dirname}/${IP_FILE_NAME}`);
-    const ipList = JSON.parse(rawIp);
-    console.log(ipList);
-    const ip = sock.remoteAddress;
-    if (ipList[ip]) {
-        fileName = ipList[ip];
-    } else {
-        fileName = ip;
-    }
-    console.log('SOCK: ', sock.remoteAddress);
-
+    const ip = getUserIP(sock);
+    fileName = mapIPToUserName(ip);
 });
 
 server.listen(3000, '0.0.0.0', () => {
     console.log('Server started in port 3000');
 });
+
+const getUserIP = sock => sock.remoteAddress;
+
+const mapIPToUserName = ip => {
+    const rawIp = fs.readFileSync(`${__dirname}/${IP_FILE_NAME}`);
+    const ipList = JSON.parse(rawIp);
+    return ipList[ip] ? ipList[ip] : ip;
+}
